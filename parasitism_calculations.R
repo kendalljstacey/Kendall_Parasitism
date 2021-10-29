@@ -67,8 +67,8 @@ num_parasitized
 105/(105+128)
 #### larval emergence ~ sex ####
 emergence_noNA<- prattvilleparasitism %>% 
-  filter(!is.na(larvalEmergence))
-ggplot(emergence_noNA%>% filter(Sex!="nymph"), aes(fill=Sex, x=larvalEmergence))+
+  filter(!is.na(larvalEmergence)) 
+  ggplot(emergence_noNA%>% filter(Sex!="nymph"), aes(fill=Sex, x=larvalEmergence))+
   geom_histogram(stat="count", position="dodge") +
   theme(text=element_text(size=15))+
   scale_fill_brewer(palette = "Set2")+
@@ -109,7 +109,6 @@ proportion_mal #proportion of males that produced larvae is 39.6%
 clean_pupationlength<-prattvilleparasitism %>% 
   filter(!is.na(daysPupationToAdult) & daysPupationToAdult!=0)
   mean(clean_pupationlength$daysPupationToAdult) #mean pupation length is 12.795
-  
 ggplot(clean_pupationlength, aes(x=daysPupationToAdult, fill=daysPupationToAdult))+
     geom_histogram(stat="count", position="dodge")+
   theme(text=element_text(size=15))+
@@ -120,6 +119,10 @@ clean_death<-prattvilleparasitism %>%
   filter(!is.na(daystoDeath) & !is.na(larvalEmergence))
 ggplot(clean_death, aes(x=larvalEmergence, y=daystoDeath, fill=larvalEmergence))+
   geom_boxplot()+
+  theme(text=element_text(size=15))+
+  scale_fill_brewer(palette = "Set2")
+ggplot(clean_death %>% filter(eggNumber<20 & eggNumber>0), aes(x=eggNumber, y=daystoDeath, color=larvalEmergence))+
+  geom_point(size=2, position = "jitter")+
   theme(text=element_text(size=15))+
   scale_fill_brewer(palette = "Set2")
 
