@@ -1,6 +1,6 @@
-# Kendall Parasitism 
+<p> # Kendall Parasitism 
 
-<p>**Kendall Stacey**<br>
+**Kendall Stacey**<br>
 
 **Master's of Entomology**</p>
 
