@@ -18,8 +18,7 @@ prattvilleparasitism$scutellum<-as.double(prattvilleparasitism$scutellum)
 ########################### sex data #################################################
 #### eggs laid ~ sex ####
 
-eggnum_sex_em<-as.data.frame(eggnum_sex_em)
-head(eggnum_sex_em)
+
 
 #### larval emergence ~ sex ####
 emergence_noNA<- prattvilleparasitism %>% 

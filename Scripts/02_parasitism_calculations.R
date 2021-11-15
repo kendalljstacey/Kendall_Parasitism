@@ -15,14 +15,13 @@ eggnum_sex<-lm(eggNumber~ Sex*matingpair, prattvilleparasitism %>% filter(Sex!="
 Anova(eggnum_sex)
 #how is egg number affected by sex of host and whether or not they were in mating pair? 
 #Sex and mating pair are good predictors of egg number, but there is no interaction b/w the two
-#visualization line 5 and 23
 
 eggnum_sex_em<-emmeans(eggnum_sex,~ Sex*matingpair)
 pairs(eggnum_sex_em)
+eggnum_sex_em<-as.data.frame(eggnum_sex_em)
+head(eggnum_sex_em)
 #biggest contrasts between males and females not in a mating pair, males not in a mating pair
 #and females in a mating pair, and males in a mating pair and males not in a mating pair
-#visualization line 5 and 23
-eggnum_sex_em<-as.data.frame(eggnum_sex_em)
 #made this dataframe so I can plot it
 
 mean_eggnum_sex<- prattvilleparasitism %>% 
@@ -57,7 +56,6 @@ emsex<-glm(larvalEmergence~Sex, data=emergence_noNA %>% filter(Sex!="nymph"), fa
 Anova(emsex)
 #while there are more males with parasitoid eggs, there's no difference inthe number of 
 #parasitoids that emerge from each sex, WEIRD!
-#visulaization line 44
 
 emsex_em<-emmeans(emsex,~Sex)
 plot(emsex_em)
