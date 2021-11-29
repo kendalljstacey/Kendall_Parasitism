@@ -230,3 +230,6 @@ perc_eggem<-prattvilleparasitism %>%
   group_by(eggs, larvalEmergence) %>% 
   summarise(count_f=n())
 perc_eggem<-as.data.frame(perc_eggem)
+
+
+colony_init<- prattvilleparasitism %>% 
