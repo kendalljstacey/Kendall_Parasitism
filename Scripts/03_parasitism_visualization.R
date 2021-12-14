@@ -15,6 +15,7 @@ ggplot(prattvilleparasitism %>% filter(Sex!="nymph" & eggs=="y" & eggNumber<20),
                                   size = 0.75))+
   facet_wrap(~matingpair, labeller="label_both")+
   geom_smooth(method="lm")
+ggsave(filename = file.path("Outputs","mpegglaying.png"))
 #how many eggs are laid on each sex of host? does mating pair affect it? 
 #of all the bugs with eggs, males had higher numbers of eggs laid on them
 
@@ -32,6 +33,8 @@ ggplot() +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",size = 0.75), 
         legend.position = c(.8,.8))
+ggsave(filename = file.path("Outputs","mpegglayingemmeans.png"))
+
 #mean egg number laid on each sex and mating pair combination
 #males not in a mating pair had much higher average egg # than any other combo
 
@@ -53,6 +56,8 @@ ggplot(emergence_noNA%>% filter(Sex!="nymph"), aes(fill=Sex, x=larvalEmergence))
         panel.grid = element_line(color = "gray",
                                   size = 0.75),
         legend.position = c(.1,.8))
+ggsave(filename = file.path("Outputs","emergencebar.png"))
+
 #count of males and females that produced parasitoids
 #males and femlaes had similar levels of parasitiod production
 
@@ -75,6 +80,8 @@ ggplot(clean_death, aes(x=larvalEmergence, y=daystoDeath, fill=larvalEmergence))
   labs(x=" ", 
         y="Days until Death", 
        title = "Days to death and Parasitoid Emergence")
+ggsave(filename = file.path("Outputs","survivalboxplot.png"))
+
 #how is liefspan affected by parasitoid emergence? 
 #the group that produced a parasitoid ahd much lower lifespans
 
@@ -103,6 +110,8 @@ ggplot(clean_death %>% filter(eggNumber<20 & eggNumber>0 & daystoDeath<100),
   scale_y_continuous(breaks=seq(0, 12, 2))+
   coord_cartesian(ylim=c(0,12))+
   facet_wrap(~larvalEmergence)
+ggsave(filename = file.path("Outputs","survivalemdotplotfacet.png"))
+
 
 ggplot(clean_death %>% filter(eggNumber<20 & eggNumber>0 & daystoDeath<100), 
        aes(y=eggNumber, x=daystoDeath, color=larvalEmergence))+
@@ -127,6 +136,8 @@ ggplot(clean_death %>% filter(eggNumber<20 & eggNumber>0 & daystoDeath<100),
         strip.text = element_blank())+
   scale_y_continuous(breaks=seq(0, 12, 2))+
   coord_cartesian(ylim=c(0,12))
+ggsave(filename = file.path("Outputs","survivalemdotplot.png"))
+
 #how is lifespan affected by the number of eggs laid on each host? 
 #filtered out any bugs with no eggs and any with more than 20
 #included whether or not host prdouced a parasitoid
@@ -199,6 +210,8 @@ ggplot(fix_pratt,
         axis.title.x = element_text(size=16),
         strip.text = element_text(size=14),
         plot.title = element_text(size = 18))
+ggsave(filename = file.path("Outputs","survivalembarfacet.png"))
+
 
 
 ggplot(prattvilleparasitism %>% filter( eggs=="y" & !is.na(larvalEmergence) & !is.na(eggs)),
@@ -210,6 +223,7 @@ ggplot(prattvilleparasitism %>% filter( eggs=="y" & !is.na(larvalEmergence) & !i
   scale_fill_brewer(palette = "Set2")+
   geom_text(aes(11.1, label="Avg days Emergence", y=.02), angle=0, size=4)+
   geom_text(aes(20.3, label="Avg days no Emergence", y=.01), angle=0, size=4)
+ggsave(filename = file.path("Outputs","survivalfreqency.png"))
 
 
 ####fecundity ~ laravalemergence ####
@@ -233,6 +247,8 @@ ggplot(fecundity, aes(x=larvalEmergence, y=clutches, fill=eggs))+
         axis.title.y = element_text(size=16),
         legend.background = element_blank(),
         legend.box.background = element_rect(colour = "black"))
+ggsave(filename = file.path("Outputs","fecundityboxplot.png"))
+
 #this plot shows egg masses (clutches) laid by female hosts and wehter or not
 #they produced a parasitoid or bore parasitoid eggs 
 
@@ -253,6 +269,8 @@ ggplot() +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",size = 0.75), 
         legend.position = c(.9,.8))
+ggsave(filename = file.path("Outputs","meanfecundityem.png"))
+
 #plot of emmeans calculations on fecundity and parasitoid emergence/ parasitoid eggs 
 
 
@@ -292,7 +310,8 @@ ggplot(egg_place, aes(x=body_part, y=egg_num))+
   scale_x_discrete(labels=c("Dorsal Abd", "Dorsal Thor", "Head", "Leg", "Pronotum", "Scutellum", "Ventral Abd", "Ventral Thor", "Wing"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",
-                                  size = 0.75))
+                                  size = 0.75))+
+  facet_wrap(~larvalEmergence)
 #frequency of eggs laid on each body part
 #more eggs laid on ventral abdomen and thorax
 
@@ -310,6 +329,8 @@ ggplot() +
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",
                                   size = 0.75))
+ggsave(filename = file.path("Outputs","eggsbodypartem.png"))
+
 #mean egg number laid on each body part
 
 
@@ -319,7 +340,6 @@ ggplot(perc_eggem)+
   geom_col(aes(x=larvalEmergence, y=count_f, fill=eggs), position = "dodge")+
   theme(text=element_text(size=15))+
   labs(title = "Proportion of Stink Bugs that Produced a Parasitoid")+
-  xlab(' ')+
   ylab('Number of Stink Bugs')+
   scale_fill_manual(name="Bearing Parasitoid Eggs",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
   scale_x_discrete(labels=c("Produced a Parasitoid","Did not Produce a Parasitoid"))+
@@ -331,3 +351,26 @@ ggplot(perc_eggem)+
         axis.title.y = element_text(size=16),
         legend.background = element_blank(),
         legend.box.background = element_rect(colour = "black"))
+ggsave(filename = file.path("Outputs","proportionpara.png"))
+
+################### parasitism rates circular packing plot################################################
+install.packages("ggraph")
+library(ggraph)
+install.packages("igraph")
+library(igraph)
+
+circles<- prattvilleparasitism %>% 
+  select(eggs, larvalEmergence, successfullPupation) %>% 
+  mutate(successfullPupation= coalesce(successfullPupation, 0)) %>% 
+  filter(!is.na(larvalEmergence)) %>% 
+  group_by(eggs, larvalEmergence, successfullPupation) %>% 
+  summarise(count_f=n())
+circles<-as.data.frame(circles)
+
+ggplot(circles, aes())
+
+
+ggraph(circles, layout="circlepack", size=count_f)+
+  geom_node_circle(aes(fill=depth))+
+  theme_void()+
+  scale_fill_viridis()

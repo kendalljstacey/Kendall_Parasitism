@@ -147,7 +147,7 @@ fecundity
 
 fecundity_avg <- fecundity %>% 
   group_by(larvalEmergence, eggs) %>% 
-  summarise(mean=mean(clutches)) 
+  summarise(mean_fecundity=mean(clutches)) 
   
 fecundity_avg 
 #table of mean clutch number for female hosts that produced a parasitoid or had parasitoid eggs 
@@ -233,3 +233,18 @@ perc_eggem<-as.data.frame(perc_eggem)
 
 
 colony_init<- prattvilleparasitism %>% 
+  filter(!is.na(daysPupationToAdult))
+summary(colony_init)
+
+colony_ideal<- prattvilleparasitism %>% 
+  filter(larvalEmergence=="1")
+summary(colony_ideal)
+
+######################## number collected each date ################################
+ndate<- prattvilleparasitism %>% 
+  filter(Date!= "6/29/2021") %>% 
+  group_by(Date) %>% 
+  summarise('Number Collected' =n())
+ndate
+
+ggtexttable(ndate, rows = NULL, theme = ttheme("classic"))
