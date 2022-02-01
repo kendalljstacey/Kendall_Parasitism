@@ -1,3 +1,8 @@
+#kendall stacey, kstacey@ufl.edu
+#graduate assistant, UF entomology department
+#this script contains my code for creating figures
+
+################################## intro ###############################################
 
 
 ########################### sex data #################################################
@@ -14,7 +19,8 @@ ggplot(prattvilleparasitism %>% filter(Sex!="nymph" & eggs=="y" & eggNumber<20),
         panel.grid = element_line(color = "gray",
                                   size = 0.75))+
   facet_wrap(~matingpair, labeller="label_both")+
-  geom_smooth(method="lm")
+  geom_smooth(method="lm")+
+  theme_bw()
 ggsave(filename = file.path("Outputs","mpegglaying.png"))
 #how many eggs are laid on each sex of host? does mating pair affect it? 
 #of all the bugs with eggs, males had higher numbers of eggs laid on them
@@ -29,18 +35,18 @@ ggplot() +
   xlab('Sex of Host')+
   ylab('Mean Egg Number Laid on Host')+
   scale_x_discrete(labels=c("Male", "Female"))+
-  scale_fill_manual(name="Mating Pair",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
+  scale_color_manual(name="Mating Pair",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",size = 0.75), 
         legend.position = c(.8,.8))
-ggsave(filename = file.path("Outputs","mpegglayingemmeans.png"))
+#ggsave(filename = file.path("Outputs","mpegglayingemmeans.png"))
 
 #mean egg number laid on each sex and mating pair combination
 #males not in a mating pair had much higher average egg # than any other combo
 
 ggtexttable(num_parasitized, rows = NULL, theme = ttheme("classic"),
             cols = c("Sex","Parasitoid Eggs","Count")) #table showing this
-
+ggsave(filename = file.path("Outputs","table_sex_parasitism.png"))
 
 #### larval emergence ~ sex ####
 
@@ -64,17 +70,32 @@ ggsave(filename = file.path("Outputs","emergencebar.png"))
 
 ########################### biology info#############################################
 #### pupation length ####
-
+clean_pupationlength$daysPupationToAdult<-as.factor(clean_pupationlength$daysPupationToAdult)
 ggplot(clean_pupationlength, aes(x=daysPupationToAdult, fill=daysPupationToAdult))+
-  geom_histogram(stat="count", position="dodge")+
+  geom_histogram(stat="count", position="dodge", fill="aquamarine3")+
   theme(text=element_text(size=15))+
-  scale_fill_brewer(palette = "Set2")#histogram of pupation length
+  #scale_fill_brewer(palette = "Set2")+
+  labs(x="Pupation Length (Days)",
+       y="Frequency",
+       title = "Pupation Length Frequency")+
+  theme(legend.position = "none",
+        panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        strip.background = element_blank(),
+        strip.text = element_blank())
+ggsave(filename = file.path("Outputs","pupationhisto.png"))
+
+  #histogram of pupation length
 
 #### days to death ~ parasitism ####
 
 ggplot(clean_death, aes(x=larvalEmergence, y=daystoDeath, fill=larvalEmergence))+
   geom_boxplot()+
-  theme(text=element_text(size=15))+
+  theme(text=element_text(size=15),
+        legend.position = "none")+
   scale_fill_brewer(palette = "Set2")+
   scale_x_discrete(labels=c("Produced a Parasitoid", "Did not Produce a Parasitoid"))+
   labs(x=" ", 
@@ -164,6 +185,7 @@ ggplot(avg_death_para, aes(x=larvalEmergence, y=days_dead, fill=eggs))+
         axis.title.y = element_text(size=16),
         legend.background = element_blank(),
         legend.box.background = element_rect(colour = "black"))
+ggsave(filename = file.path("Outputs","avgdaystodeath.png"))
 #using dataset that calculated mean days to death for bugs that had eggs 
 #and production of a parasitoid
 
@@ -253,7 +275,9 @@ ggsave(filename = file.path("Outputs","fecundityboxplot.png"))
 #they produced a parasitoid or bore parasitoid eggs 
 
 
-ggtexttable(fecundity_avg, rows = NULL, theme = ttheme("classic"))
+ggtexttable(fecundity_avg, rows = NULL, theme = ttheme("classic"),
+cols = c("Larval Emergence","Parasitoid Eggs","Mean Egg Masses"))
+ggsave(filename = file.path("Outputs","table_fecundity.png"))
 
 fec_em<-as.data.frame(fec_em)
 ggplot() + 
@@ -276,12 +300,17 @@ ggsave(filename = file.path("Outputs","meanfecundityem.png"))
 
 
  #### eggs laid on host ~ successful emergence##### 
+ggplot(prattvilleparasitism%>% filter(!is.na(larvalEmergence) & eggNumber!=0 & Sex!="nymph" & eggNumber<20), 
+       aes(x=daystoDeath, color=larvalEmergence, y=eggNumber))+
+geom_point()+
+  facet_grid(Sex~matingpair)
 
-ggplot(prattvilleparasitism %>% filter(!is.na(larvalEmergence) & eggNumber!=0), aes(x=larvalEmergence, color=larvalEmergence, y=eggNumber))+
+ggplot(prattvilleparasitism %>% filter(!is.na(larvalEmergence) & eggNumber!=0), 
+       aes(x=larvalEmergence, color=larvalEmergence, y=eggNumber))+
   geom_point(position = "jitter", size=2)+
   theme(text=element_text(size=15))+
   scale_color_brewer(palette = "Set2")+# at what did egg number affect parasitism? 
-  ylim(1,10)
+  ylim(0,10)
 
 ggplot(prattvilleparasitism %>% filter(!is.na(larvalEmergence) & eggNumber!=0), aes(x=eggNumber, fill=larvalEmergence))+
   geom_histogram(position = "dodge")+
@@ -289,16 +318,32 @@ ggplot(prattvilleparasitism %>% filter(!is.na(larvalEmergence) & eggNumber!=0), 
   scale_fill_brewer(palette = "Set2")+
   xlim(0,15)
 
-ggplot(prattvilleparasitism %>% filter(!is.na(larvalEmergence) & eggNumber!=0), aes(x=larvalEmergence, fill=larvalEmergence, y=eggNumber))+
-  geom_boxplot()+
-  theme(text=element_text(size=15))+
+ggplot(prattvilleparasitism %>% filter(!is.na(eggNumber) & !is.na(larvalEmergence) & eggNumber!=0), aes(x=larvalEmergence, fill=larvalEmergence, y=eggNumber))+
+  geom_violin(alpha=.8)+
+  geom_point(position="jitter")+
+  theme(text=element_text(size=15),
+        legend.position = "none")+
+  theme(legend.position = "none",
+        panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        strip.background = element_blank(),
+        strip.text = element_blank())+
   scale_fill_brewer(palette = "Set2")+
-  ylim(1,10)
+  scale_y_continuous(breaks = seq(1, 10, by=1), limits=c(1,10))+
+  xlab(" ")+
+  ylab("Egg Number")+
+  labs(title = "Successful Parasitism by Egg Number")+
+  scale_x_discrete(labels=c("Produced a Parasitoid", "Did not"))
+ggsave(filename = file.path("Outputs","meaneggnumparasitism.png"))
+
 
 ################################# egg placement ##########################################
 #set it up
 
-ggplot(egg_place, aes(x=body_part, y=egg_num))+
+ggplot(simple_eggplace, aes(x=body_p, y=egg_num))+
   geom_col(position = "dodge", fill="aquamarine3")+
   theme(text=element_text(size=15))+
   theme (axis.text.x = element_text (angle = 45, vjust = 1, hjust=1))+
@@ -306,71 +351,118 @@ ggplot(egg_place, aes(x=body_part, y=egg_num))+
   labs(title = "Frequency of Eggs Laid on Each Body Part",
        subtitle = "by Parasitoid Emergence")+
   xlab('Body Part')+
-  ylab('Count')+
-  scale_x_discrete(labels=c("Dorsal Abd", "Dorsal Thor", "Head", "Leg", "Pronotum", "Scutellum", "Ventral Abd", "Ventral Thor", "Wing"))+
+  ylab('Egg Number')+
+  scale_x_discrete(labels=c("Abdomen","Thorax", "Head", "Leg", "Pronotum", "Scutellum","Wing"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",
                                   size = 0.75))+
   facet_wrap(~larvalEmergence)
+
 #frequency of eggs laid on each body part
 #more eggs laid on ventral abdomen and thorax
 
-
-
-
-ggplot() + 
-  geom_pointrange(data=em_place, aes(x=body_part, y=emmean, ymin=asymp.LCL, ymax=asymp.UCL), size=2, color="coral")+
+ggplot(simple_eggplace, aes(x=body_p, y=egg_num))+
+  geom_violin(fill="aquamarine3")+
   theme(text=element_text(size=15))+
   theme (axis.text.x = element_text (angle = 45, vjust = 1, hjust=1))+
-  labs(title = "Mean Eggs Laid on Each Body Part")+
+  theme (axis.text.x = element_text (angle = 45, vjust = 1, hjust=1))+
+  labs(title = "Frequency of Eggs Laid on Each Body Part",
+       subtitle = "by Parasitoid Emergence")+
   xlab('Body Part')+
-  ylab('Mean Egg Number Laid on Body Parts')+
-  scale_x_discrete(labels=c("Dorsal Abd", "Dorsal Thor", "Head", "Leg", "Pronotum", "Scutellum", "Ventral Abd", "Ventral Thor", "Wing"))+
+  ylab('Egg Number')+
+  scale_x_discrete(labels=c("Abdomen","Thorax", "Head", "Leg", "Pronotum", "Scutellum","Wing"))+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75))+
+  facet_wrap(~larvalEmergence)
+ggplot(simple_eggplace, aes(x=Insectnumber, y=egg_num, color=body_p))+
+  geom_point(position="jitter")
+
+ggplot(simple_eggplace, aes(x=body_p, y=egg_num, color=larvalEmergence))+
+  geom_point(size=2, position="jitter")
+
+ggplot(simple_eggplace %>% filter(egg_num<10 & egg_num>0), aes(x=body_p, y=egg_num, fill=larvalEmergence, color=larvalEmergence))+
+  geom_col(position = "dodge")
+
+ggplot() + 
+  geom_pointrange(data=em_place, aes(x=body_p, y=prob, ymin=asymp.LCL, ymax=asymp.UCL), size=2, color="coral")+
+  theme(text=element_text(size=15))+
+  theme (axis.text.x = element_text (angle = 45, vjust = 1, hjust=1))+
+  labs(title = "Likelihood of Successful Parasitism",
+       subtitle = "by Egg Location")+
+  xlab('Body Part')+
+  ylab('Likelihood of Producing Parasitoid')+
+  scale_x_discrete(labels=c("Abdomen", "Thorax", "Head", "Leg", "Pronotum", "Scutellum", "Wing"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",
                                   size = 0.75))
 ggsave(filename = file.path("Outputs","eggsbodypartem.png"))
 
-#mean egg number laid on each body part
+#body part
+
+
 
 
 ####################### parasitism rates ###################################################
+ggplot(perc_eggem, aes(x=larvalEmergence, y=count_f, fill=eggs))+
+  geom_col()+
+  theme(text=element_text(size=15))+
+  labs(title = "Count of bugs that produced parasitoid",
+       subtitle = "with or without parasitoid eggs")+
+  ylab('Number of Stink Bugs')+
+  xlab("")+
+  scale_fill_manual(name="Bearing Parasitoid Eggs",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
+  scale_x_discrete(labels=c("Produced a Parasitoid","Did not"))+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
+        legend.position = c(.25,.85), 
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        legend.background = element_blank(),
+        legend.box.background = element_rect(colour = "black"))
+ggsave(filename = file.path("Outputs","proportionparaeggstacked.png"))
 
 ggplot(perc_eggem)+
   geom_col(aes(x=larvalEmergence, y=count_f, fill=eggs), position = "dodge")+
   theme(text=element_text(size=15))+
   labs(title = "Proportion of Stink Bugs that Produced a Parasitoid")+
   ylab('Number of Stink Bugs')+
+  xlab("")+
   scale_fill_manual(name="Bearing Parasitoid Eggs",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
-  scale_x_discrete(labels=c("Produced a Parasitoid","Did not Produce a Parasitoid"))+
+  scale_x_discrete(labels=c("Produced a Parasitoid","Did not"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",
                                   size = 0.75),
-        legend.position = c(.5,.8), 
+        legend.position = c(.5,.85), 
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        legend.background = element_blank(),
+        legend.box.background = element_rect(colour = "black"))
+ggsave(filename = file.path("Outputs","proportionparaegg.png"))
+
+ggplot(perc_eggem)+
+  geom_col(aes(x=larvalEmergence, y=count_f, fill=larvalEmergence), position = "dodge")+
+  theme(text=element_text(size=15))+
+  labs(title = "Proportion of Stink Bugs that Produced a Parasitoid")+
+  ylab('Number of Stink Bugs')+
+  xlab("")+
+  scale_fill_manual(name="Bearing Parasitoid Eggs",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
+  scale_x_discrete(labels=c("Produced a Parasitoid","Did not"))+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
         axis.text.x = element_text(size = 16),
         axis.title.y = element_text(size=16),
         legend.background = element_blank(),
         legend.box.background = element_rect(colour = "black"))
 ggsave(filename = file.path("Outputs","proportionpara.png"))
 
-################### parasitism rates circular packing plot################################################
-install.packages("ggraph")
-library(ggraph)
-install.packages("igraph")
-library(igraph)
-
-circles<- prattvilleparasitism %>% 
-  select(eggs, larvalEmergence, successfullPupation) %>% 
-  mutate(successfullPupation= coalesce(successfullPupation, 0)) %>% 
-  filter(!is.na(larvalEmergence)) %>% 
-  group_by(eggs, larvalEmergence, successfullPupation) %>% 
-  summarise(count_f=n())
-circles<-as.data.frame(circles)
-
-ggplot(circles, aes())
 
 
-ggraph(circles, layout="circlepack", size=count_f)+
-  geom_node_circle(aes(fill=depth))+
-  theme_void()+
-  scale_fill_viridis()
+ggplot(evidencepara, aes(x="", y=count_f, fill=evidence_parasitism))+
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)+
+  scale_fill_brewer(palette="Set2")+
+  theme_void()
+  
