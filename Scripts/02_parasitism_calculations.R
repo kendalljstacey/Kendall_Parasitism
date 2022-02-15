@@ -1,17 +1,7 @@
 #kendall stacey, kstacey@ufl.edu
 #graduate assistant, UF entomology department
-#this script contains all of my linear models for different comparisons and emmeans
+#this script contains all of my data analyses and data transformations for my thesis project
 
-
-################################## intro ###############################################
-library(imputeTS)
-library(ggpubr)
-library(dplyr)
-library(tidyverse)
-library(forcats)
-library(car)
-
-prattvilleparasitism<-read_csv("Raw_data/prattvilleparasitism.csv")
 
 ########################### sex data #################################################
 #### eggs laid ~ sex ####
@@ -55,7 +45,7 @@ mp_para<-prattvilleparasitism %>%
   filter(!is.na(eggNumber) & eggNumber>0) %>% 
   group_by(matingpair, Sex) %>% 
   summarise(avg_egg=mean(eggNumber))
-mp_para
+mp_para #creates a dataset with the average eggs laid on each mating pair/ sex combination
 
 #### larval emergence ~ sex ####
 
@@ -114,14 +104,24 @@ clean_pupationlength<-prattvilleparasitism %>%
   puplength<-lm(daysPupationToAdult~Sex, data=clean_pupationlength)
   Anova(puplength)
 #visualization line 61
-  
-  
-  
+
+pup_succ<-prattvilleparasitism %>% 
+  filter(!is.na(successfullPupation) & !is.na(larvalEmergence)) %>% 
+  group_by(larvalEmergence, successfullPupation) %>% 
+  summarise(count=n())
+pup_succ  
 #### days to death ~ parasitism ####
   
 clean_death<-prattvilleparasitism %>% 
-  filter(!is.na(daystoDeath) & !is.na(larvalEmergence)) #cleaning NA's out of death and emergence
+  filter(!is.na(daystoDeath) & !is.na(larvalEmergence)) %>% 
+  select(daystoDeath, larvalEmergence, eggNumber) #cleaning NA's out of death and emergence
+death_eggnum<-lm(daystoDeath~eggNumber, data=clean_death)
+Anova(death_eggnum)
 
+clean_death_avg<-prattvilleparasitism %>% 
+  filter(!is.na(daystoDeath) & !is.na(larvalEmergence)) %>% 
+  group_by(larvalEmergence, eggNumber) %>% 
+  summarise(mean_daysdeath=mean(daystoDeath))
 
 death<-lm(daystoDeath~larvalEmergence*eggs, clean_death)
 Anova(death)
@@ -175,6 +175,22 @@ fecundity_avg <- fecundity %>%
 fecundity_avg 
 #table of mean clutch number for female hosts that produced a parasitoid or had parasitoid eggs 
 
+egg_fert<- prattvilleparasitism %>% 
+  filter(!is.na(totalfertileeggs) & !is.na(larvalEmergence)) %>% 
+  select(eggs, totalfertileeggs, larvalEmergence) 
+egg_lm<- lm(totalfertileeggs~eggs, data=egg_fert)
+Anova(egg_lm)
+em_egg<-emmeans(egg_lm,~eggs)
+plot(em_egg)
+
+egg_fert_avg<- prattvilleparasitism %>% 
+  filter(!is.na(totalfertileeggs) & !is.na(larvalEmergence)) %>% 
+  group_by(eggs, clutches) %>% 
+  summarise(mean=mean(totalfertileeggs))
+
+egg_fert_simp<- prattvilleparasitism %>% 
+  filter(!is.na(totalfertileeggs) & !is.na(larvalEmergence)) %>% 
+  select(eggs, clutches, totalfertileeggs) 
 
 fec_lm<-lm(clutches~ larvalEmergence+eggs, fecundity)
 Anova(fec_lm) #is statistically signficant 
@@ -204,9 +220,29 @@ mean_eggnum_em<-prattvilleparasitism %>%
 mean_eggnum_em 
 #mean egg number laid on bugs that had emergence was 2.56, mean for other is 3.26
 
+mean_perc_egg<- prattvilleparasitism %>% 
+  filter(!is.na(eggNumber) & !is.na(larvalEmergence) & eggNumber!=0) %>% 
+  group_by(eggNumber, larvalEmergence) %>% 
+  summarise(count=n())
+one_perc<-55/(55+40) #58% success
+two_perc<-29/(29+22) #57% success
+three_perc<-19/(19+6) #76% success
+four_perc<-9/(9+8) #53% success
+five_perc<-7/(7+3) #70% success
 
+
+ggplot(mean_perc_egg %>% filter(eggNumber<8), aes(x=eggNumber, y=count, fill=larvalEmergence))+
+  geom_col()
+
+lm_eggs<-lm(eggNumber~larvalEmergence, data=prattvilleparasitism %>% filter(eggNumber>0))
+Anova(lm_eggs)
+
+em_eggs<-emmeans(lm_eggs,~larvalEmergence)
+em_eggs
+plot(em_eggs)
+
+em_eggs<-as.data.frame(em_eggs)
 ################################# egg placement ##########################################
-#set it up
 egg_place<-prattvilleparasitism %>% 
   pivot_longer(cols=scutellum:wing,
                names_to="body_part",
@@ -216,6 +252,7 @@ egg_place<-prattvilleparasitism %>%
 str(egg_place)
 egg_place$body_part<-as.factor(egg_place$body_part)
 #pivot longer code to analyze eggs laid on body area
+
 simple_eggplace<-egg_place %>% 
   mutate(body_p=fct_collapse(egg_place$body_part, abdomen=c("dorsalabdomen", "ventralabdomen"), 
                       thorax=c("dorsalthorax","ventralthorax"))) %>% 
@@ -225,18 +262,64 @@ egg_means<-simple_eggplace %>%
   group_by(body_p, larvalEmergence) %>% 
   summarise(mean_egg=mean(egg_num))
 
-eggplace<-glm(larvalEmergence~body_p, family=binomial(link="cloglog"), data=simple_eggplace)
+egg_totals<-egg_place %>% 
+  filter(egg_num==1) %>% 
+  group_by(body_part) %>% 
+  summarise(count=n())
+
+
+eggplace<-glm(larvalEmergence~body_part, family=binomial(link="cloglog"), data=egg_place %>% filter(egg_num==1))
 Anova(eggplace)
 #how is larval emergence influenced by which body part the eggs is laid on? 
 # apparently it doesn't... 
 
-em_place<-emmeans(eggplace,~body_p, type="response")
+em_place<-emmeans(eggplace,~body_part, type="response")
 em_place
 plot(em_place)
 head(em_place)
 em_place<-as.data.frame(em_place)
 head(em_place)
 
+
+simp_eggplace<-glm(larvalEmergence~body_p, family=binomial(link="cloglog"), data=simple_eggplace %>% filter(egg_num==1))
+Anova(simp_eggplace)
+simp_place<-emmeans(simp_eggplace,~body_p, type="response")
+simp_place
+plot(simp_place)
+simp_place<-as.data.frame(simp_place)
+
+######## venter versus dorsum ###
+top_bot<-egg_place %>% 
+  mutate(body_p=fct_collapse(egg_place$body_part, 
+                             dorsum=c("dorsalabdomen", 
+                                      "dorsalthorax",
+                                      "head",
+                                      "pronotum",
+                                      "scutellum",
+                                      "wing"), 
+                             venter=c("ventralthorax",
+                                      "ventralabdomen",
+                                      "leg")))
+sum_bodyp<-top_bot %>% 
+  group_by(body_part) %>% 
+  summarise(mean=mean(egg_num))
+sum_topbot<-top_bot %>% 
+  group_by(body_p) %>% 
+  summarise(mean=mean(egg_num))
+sum_bodyp
+sum_topbot
+
+top_botlm<-lm(egg_num~body_p, data=top_bot)
+Anova(top_botlm)
+
+top_botem<-emmeans(top_botlm,~body_p)
+plot(top_botem)
+
+succ_topbot<-glm(larvalEmergence~body_p, data=top_bot, family = binomial(link = "cloglog"))
+Anova(succ_topbot)
+
+em_suc_topbot<-emmeans(succ_topbot,~body_p)
+plot(em_suc_topbot)
 ####################### parasitism rates ###################################################
 perc_em<-prattvilleparasitism %>% 
   filter(!is.na(larvalEmergence)) %>% 
@@ -289,3 +372,31 @@ ndate<- prattvilleparasitism %>%
 ndate
 
 ggtexttable(ndate, rows = NULL, theme = ttheme("classic"))
+
+#################### number parasitized each date, across season #####################
+bugs_date<-prattvilleparasitism %>% 
+  filter(Date!="6/29/2021") %>% 
+  group_by(Date, eggs) %>% 
+  summarise(count=n()) 
+
+para_date<-prattvilleparasitism %>% 
+  filter(!is.na(larvalEmergence) & Date!="6/29/2021") %>% 
+  group_by(Date, eggs) %>%
+  summarise(count=n())
+para_date 
+
+egg_date<-prattvilleparasitism %>% 
+  filter(Date!="6/29/2021" & eggNumber>0) %>% 
+  group_by(Date) %>% 
+  summarise(mean_egg=mean(eggNumber))
+ggtexttable(egg_date, rows = NULL, theme = ttheme("classic"),
+            cols = c("Date","Mean Eggs Laid"))
+ggsave(filename = file.path("Outputs","meaneggsbydate.png"))
+
+
+glm_date<-glm(eggNumber~Date, data=prattvilleparasitism %>% filter(Date!="6/29/2021"))
+Anova(glm_date)
+
+em_date<-emmeans(glm_date,~Date, type="response")
+plot(em_date)
+em_date<-as.data.frame(em_date)

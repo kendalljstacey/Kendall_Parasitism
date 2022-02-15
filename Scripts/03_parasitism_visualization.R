@@ -38,8 +38,9 @@ ggplot() +
   scale_color_manual(name="Mating Pair",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",size = 0.75), 
-        legend.position = c(.8,.8))
-#ggsave(filename = file.path("Outputs","mpegglayingemmeans.png"))
+        legend.position = c(.8,.8),
+        legend.box.background = element_rect(colour = "black"))
+ggsave(filename = file.path("Outputs","mpegglayingemmeans.png"))
 
 #mean egg number laid on each sex and mating pair combination
 #males not in a mating pair had much higher average egg # than any other combo
@@ -131,8 +132,17 @@ ggplot(clean_death %>% filter(eggNumber<20 & eggNumber>0 & daystoDeath<100),
   scale_y_continuous(breaks=seq(0, 12, 2))+
   coord_cartesian(ylim=c(0,12))+
   facet_wrap(~larvalEmergence)
+graph
 ggsave(filename = file.path("Outputs","survivalemdotplotfacet.png"))
-
+#path<-"/Users/kstacey/Desktop/Kendall_Parasitism/Figures/20210805_131454667_iOS.JPEG"
+#img<-readJPEG(path, native = TRUE)
+#img_graph<-graph +
+ # inset_element(p=img, 
+  #              left = .05,
+   #             bottom=.65,
+    #            right=.95,
+     #           top=.95)
+#img_graph
 
 ggplot(clean_death %>% filter(eggNumber<20 & eggNumber>0 & daystoDeath<100), 
        aes(y=eggNumber, x=daystoDeath, color=larvalEmergence))+
@@ -159,6 +169,9 @@ ggplot(clean_death %>% filter(eggNumber<20 & eggNumber>0 & daystoDeath<100),
   coord_cartesian(ylim=c(0,12))
 ggsave(filename = file.path("Outputs","survivalemdotplot.png"))
 
+
+ggplot(clean_death_avg, aes(y=eggNumber, x=mean_daysdeath, color=larvalEmergence))+
+  geom_point(position="jitter")
 #how is lifespan affected by the number of eggs laid on each host? 
 #filtered out any bugs with no eggs and any with more than 20
 #included whether or not host prdouced a parasitoid
@@ -292,12 +305,27 @@ ggplot() +
   scale_fill_manual(name="Eggs on Host",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",size = 0.75), 
-        legend.position = c(.9,.8))
+        legend.position = c(.9,.8),
+        legend.box.background = element_rect(colour = "black"))
 ggsave(filename = file.path("Outputs","meanfecundityem.png"))
 
 #plot of emmeans calculations on fecundity and parasitoid emergence/ parasitoid eggs 
 
-
+ggplot(egg_fert_simp %>% filter(totalfertileeggs>0), aes(x=clutches, y=totalfertileeggs, color=eggs))+
+  geom_point(position="jitter", size=2)+
+  geom_smooth(method = "lm")+
+  theme(text=element_text(size=15))+
+  scale_color_brewer(palette = "Set2")+
+  labs(title = "Mean Fecundity",
+       subtitle = "by Clutch Number and Parasitism")+
+  xlab('Number of Egg masses Laid')+
+  ylab('Mean Fecundity')+
+  scale_color_manual(name="Eggs on Host",labels=c("Yes", "No"), values=c("aquamarine3","coral"))+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",size = 0.75), 
+        legend.position = c(.85,.85),
+        legend.box.background = element_rect(colour = "black"))
+ggsave(filename = file.path("Outputs","meanfecundityclutch.png"))
 
  #### eggs laid on host ~ successful emergence##### 
 ggplot(prattvilleparasitism%>% filter(!is.na(larvalEmergence) & eggNumber!=0 & Sex!="nymph" & eggNumber<20), 
@@ -339,7 +367,14 @@ ggplot(prattvilleparasitism %>% filter(!is.na(eggNumber) & !is.na(larvalEmergenc
   scale_x_discrete(labels=c("Produced a Parasitoid", "Did not"))
 ggsave(filename = file.path("Outputs","meaneggnumparasitism.png"))
 
-
+ggplot(em_eggs, aes(y=emmean, x=larvalEmergence, ymin=lower.CL, ymax=upper.CL))+
+  geom_pointrange(size=2, color="coral")+
+  scale_y_continuous(breaks = c(1,2,3,4,5), labels = c(1,2,3,4,5))+
+  theme(text=element_text(size=15))+
+  labs(title = "Mean Egg Number laid on Hosts that Produced a Parasitoid or did not")+
+  xlab('Larval Emergence')+
+  ylab('Egg Number')
+  
 ################################# egg placement ##########################################
 #set it up
 
@@ -361,22 +396,9 @@ ggplot(simple_eggplace, aes(x=body_p, y=egg_num))+
 #frequency of eggs laid on each body part
 #more eggs laid on ventral abdomen and thorax
 
-ggplot(simple_eggplace, aes(x=body_p, y=egg_num))+
-  geom_violin(fill="aquamarine3")+
-  theme(text=element_text(size=15))+
-  theme (axis.text.x = element_text (angle = 45, vjust = 1, hjust=1))+
-  theme (axis.text.x = element_text (angle = 45, vjust = 1, hjust=1))+
-  labs(title = "Frequency of Eggs Laid on Each Body Part",
-       subtitle = "by Parasitoid Emergence")+
-  xlab('Body Part')+
-  ylab('Egg Number')+
-  scale_x_discrete(labels=c("Abdomen","Thorax", "Head", "Leg", "Pronotum", "Scutellum","Wing"))+
-  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
-        panel.grid = element_line(color = "gray",
-                                  size = 0.75))+
-  facet_wrap(~larvalEmergence)
-ggplot(simple_eggplace, aes(x=Insectnumber, y=egg_num, color=body_p))+
-  geom_point(position="jitter")
+
+ggplot(simple_eggplace %>% filter(egg_num<8, egg_num!=0), aes(y=egg_num, x=Replicate, color=larvalEmergence))+
+  geom_point(position = "jitter")
 
 ggplot(simple_eggplace, aes(x=body_p, y=egg_num, color=larvalEmergence))+
   geom_point(size=2, position="jitter")
@@ -385,21 +407,25 @@ ggplot(simple_eggplace %>% filter(egg_num<10 & egg_num>0), aes(x=body_p, y=egg_n
   geom_col(position = "dodge")
 
 ggplot() + 
-  geom_pointrange(data=em_place, aes(x=body_p, y=prob, ymin=asymp.LCL, ymax=asymp.UCL), size=2, color="coral")+
+  geom_pointrange(data=em_place, aes(x=body_part, y=prob, ymin=asymp.LCL, ymax=asymp.UCL), size=2, color="coral")+
   theme(text=element_text(size=15))+
   theme (axis.text.x = element_text (angle = 45, vjust = 1, hjust=1))+
   labs(title = "Likelihood of Successful Parasitism",
        subtitle = "by Egg Location")+
   xlab('Body Part')+
   ylab('Likelihood of Producing Parasitoid')+
-  scale_x_discrete(labels=c("Abdomen", "Thorax", "Head", "Leg", "Pronotum", "Scutellum", "Wing"))+
+  scale_x_discrete(labels=c("Dorsal Abdomen", "Dorsal Thorax", "Head", "Leg", 
+                            "Pronotum", "Scutellum", "Ventral Abdomen", "Dorsal Abdomen", "Wing"))+
   theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
         panel.grid = element_line(color = "gray",
                                   size = 0.75))
 ggsave(filename = file.path("Outputs","eggsbodypartem.png"))
 
 #body part
-
+ggplot(top_bot, aes(x=body_p, y=egg_num, color=larvalEmergence))+
+  geom_point(position="jitter", size=2)+
+  scale_color_manual(name="Produced a Parasitoid",labels=c("Yes", "No"), values=c("aquamarine3","coral"))
+  
 
 
 
@@ -465,4 +491,47 @@ ggplot(evidencepara, aes(x="", y=count_f, fill=evidence_parasitism))+
   coord_polar("y", start=0)+
   scale_fill_brewer(palette="Set2")+
   theme_void()
+  
+######################## date parasitized #########################################
+
+
+ggplot()+
+  geom_pointrange(data=em_date, size=2, color="coral", aes(x=Date, y=emmean, ymin=asymp.LCL, ymax=asymp.UCL, color=Date))+
+  theme(text=element_text(size=15))+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        legend.position = "none")
+  
+ggplot(prattvilleparasitism %>% filter(Date!="6/29/2021" & eggNumber<10), aes(x=Date, y=eggNumber))+
+  geom_boxplot()
+
+
+ggplot(bugs_date, aes(x=Date, y=count, fill=eggs))+
+  geom_col()+
+  annotate("text", x=1, y=57, label="32%", color="white", size=6)+
+  annotate("text", x=2, y=47, label="55%", color="white", size=6)+
+  annotate("text", x=3, y=118, label="40%", color="white", size=6)+
+  annotate("text", x=4, y=36, label="62%", color="white", size=6)+
+  annotate("text", x=5, y=36, label="80%", color="white", size=6)+
+  annotate("text", x=6, y=22, label="71%", color="white", size=6)+
+  theme(text=element_text(size=15))+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        legend.position = c(.7,.8),
+        legend.box.background = element_rect(colour = "black"))+
+  theme (axis.text.x = element_text (angle = 30, vjust = 1, hjust=1))+
+  scale_fill_brewer(palette = "Set2")+
+  labs(title = "Proportion of Parasitized Bugs By Date")+
+  ylab('Number of Stink Bugs')+
+  xlab("Date")+
+  scale_fill_manual(name="Bearing Parasitoid Eggs",labels=c("Yes", "No"), values=c("aquamarine3","coral"))
+ggsave(filename = file.path("Outputs","date_prop_para.png"))  
   

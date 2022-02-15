@@ -11,6 +11,8 @@ library(dplyr)
 library(tidyverse)
 library(forcats)
 library(car)
+library(patchwork)
+library(jpeg)
 
 
 prattvilleparasitism<-read_csv("Raw_data/prattvilleparasitism.csv")
