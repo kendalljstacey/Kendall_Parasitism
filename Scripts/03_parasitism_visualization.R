@@ -261,6 +261,22 @@ ggplot(prattvilleparasitism %>% filter( eggs=="y" & !is.na(larvalEmergence) & !i
 ggsave(filename = file.path("Outputs","survivalfreqency.png"))
 
 
+ggplot(evidenceparadeath, aes(x=evidence_parasitism, y=daystoDeath, fill=evidence_parasitism))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Set2")+
+  labs(title = "Average Survival")+
+  ylab('Days to Death')+
+  xlab("Parasitized")+ 
+  theme(legend.position = "none")+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        axis.title.x = element_text(size=16),
+        plot.title = element_text(size = 18))
+ggsave(filename = file.path("Outputs","survival_evidencepara.png"))
+
 ####fecundity ~ laravalemergence ####
 
 
@@ -314,7 +330,7 @@ ggsave(filename = file.path("Outputs","meanfecundityem.png"))
 ggplot(egg_fert_simp %>% filter(totalfertileeggs>0), aes(x=clutches, y=totalfertileeggs, color=eggs))+
   geom_point(position="jitter", size=2)+
   geom_smooth(method = "lm")+
-  theme(text=element_text(size=15))+
+  theme((text=element_text(size=15))+
   scale_color_brewer(palette = "Set2")+
   labs(title = "Mean Fecundity",
        subtitle = "by Clutch Number and Parasitism")+
@@ -326,6 +342,22 @@ ggplot(egg_fert_simp %>% filter(totalfertileeggs>0), aes(x=clutches, y=totalfert
         legend.position = c(.85,.85),
         legend.box.background = element_rect(colour = "black"))
 ggsave(filename = file.path("Outputs","meanfecundityclutch.png"))
+
+ggplot(evidenceparafec, aes(x=evidence_parasitism, y=clutches, fill=evidence_parasitism))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Set2")+
+  labs(title = "Average Lifetime Fecundity")+
+  ylab('Egg Masses')+
+  xlab("Parasitized")+ 
+  theme(legend.position = "none")+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        axis.title.x = element_text(size=16),
+        plot.title = element_text(size = 18))
+ggsave(filename = file.path("Outputs","fecundity_evidencepara.png"))
 
  #### eggs laid on host ~ successful emergence##### 
 ggplot(prattvilleparasitism%>% filter(!is.na(larvalEmergence) & eggNumber!=0 & Sex!="nymph" & eggNumber<20), 
@@ -492,6 +524,20 @@ ggplot(evidencepara, aes(x="", y=count_f, fill=evidence_parasitism))+
   scale_fill_brewer(palette="Set2")+
   theme_void()
   
+ggplot(evidencepara, aes(x=evidence_parasitism, y=count_f, fill=evidence_parasitism))+
+  geom_col()+
+  scale_fill_brewer(palette = "Set2")+
+  labs(title = "Proportion of Parasitized Bugs")+
+  ylab('Number of Stink Bugs')+
+  xlab("Parasitized")+ 
+  theme(legend.position = "none")+
+  theme(panel.border = element_rect(colour = "black", fill=NA, size=2),
+        panel.grid = element_line(color = "gray",
+                                  size = 0.75),
+        axis.text.x = element_text(size = 16),
+        axis.title.y = element_text(size=16),
+        axis.title.x = element_text(size=16),
+        plot.title = element_text(size = 18))
 ######################## date parasitized #########################################
 
 

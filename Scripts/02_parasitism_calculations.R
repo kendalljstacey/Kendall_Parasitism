@@ -42,11 +42,19 @@ ggtexttable(num_parasitized, rows = NULL, theme = ttheme("classic")) #table show
 105/(105+128) # percentage of females taht had eggs was 45.1%
 
 mp_para<-prattvilleparasitism %>% 
-  filter(!is.na(eggNumber) & eggNumber>0) %>% 
+  filter(!is.na(eggNumber) & eggNumber>0 & Sex!="nymph") %>% 
   group_by(matingpair, Sex) %>% 
   summarise(avg_egg=mean(eggNumber))
 mp_para #creates a dataset with the average eggs laid on each mating pair/ sex combination
+ggtexttable(mp_para, rows = NULL, theme = ttheme("classic"),
+            cols = c("Mating pair","Sex","Average egg number")) #table showing this
+ggsave(filename = file.path("Outputs","mp_sex_table.png"))
 
+#prattvilleparasitism$eggNumber<-as.factor(prattvilleparasitism$eggNumber)
+mp_lm<-glm(eggs~matingpair, data=prattvilleparasitism, family=binomial(link="cloglog"))
+Anova(mp_lm)
+em_mp<-emmeans(mp_lm,~matingpair)
+plot(em_mp)
 #### larval emergence ~ sex ####
 
 emergence_noNA<- prattvilleparasitism %>% 
@@ -153,6 +161,22 @@ summary(para_death$daysPupaFoundtoDeath)
 #subsets dataset by insect ID and lifespan (days to death) and removes NA's
 
 
+evidenceparadeath<-prattvilleparasitism %>% 
+  filter(!is.na(eggs) & !is.na(larvalEmergence) & !is.na(daystoDeath)) %>% 
+  mutate(evidence_parasitism=fct_collapse(larvalEmergence, yes=c("1"), 
+                                          no=c("0"))) %>% 
+  select(eggs, larvalEmergence, evidence_parasitism, daystoDeath)
+  #summarise(mean_death=mean(daystoDeath))
+  #summarise(count=n())
+evidenceparadeath$evidence_parasitism[2]="yes" #yes is 245, no is 183
+
+sex_death<-prattvilleparasitism %>% 
+  filter(larvalEmergence==1 & !is.na(daysPupaFoundtoDeath) & Sex!="nymph") %>% 
+  group_by(Sex) %>% 
+  summarise(mean_daysdeath=mean(daysPupaFoundtoDeath))
+death_sex<-lm(daysPupaFoundtoDeath~Sex, data=prattvilleparasitism)
+Anova(death_sex)
+
 ####fecundity ~ laravalemergence ####
 fecundity<- prattvilleparasitism %>% 
   filter(Sex=="f" & !is.na(larvalEmergence) & !is.na(eggs)) %>% 
@@ -204,7 +228,14 @@ plot(fec_em)
 ggtexttable(fecundity_avg, rows = NULL, theme = ttheme("classic"))
 
 
-
+evidenceparafec<-prattvilleparasitism %>% 
+  filter(!is.na(eggs) & !is.na(larvalEmergence) & !is.na(clutches)) %>% 
+  mutate(evidence_parasitism=fct_collapse(larvalEmergence, yes=c("1"), 
+                                          no=c("0"))) %>% 
+  select(eggs, larvalEmergence, evidence_parasitism, clutches)
+#summarise(mean_death=mean(daystoDeath))
+#summarise(count=n())
+evidenceparafec$evidence_parasitism[2]="yes"
 #### eggs laid on host ~ successful emergence##### 
 
 eggnum_glm<-glm(larvalEmergence~eggNumber, prattvilleparasitism %>% filter(!is.na(larvalEmergence) & eggNumber!=0), family=binomial(link="cloglog"))
@@ -340,12 +371,13 @@ perc_egg
 
 (134+92+19)/(134+92+19+183) #proprotion of bugs that showed evidence of parasitism= 57%
 
+#### count of parasitized bugs by evidence of parasitism 
 evidencepara<-prattvilleparasitism %>% 
   filter(!is.na(eggs) & !is.na(larvalEmergence)) %>% 
   mutate(evidence_parasitism=fct_collapse(larvalEmergence, yes=c("1"), 
                                           no=c("0"))) %>% 
   group_by(eggs, larvalEmergence, evidence_parasitism) %>% 
-  summarise(count_f=n()) 
+  summarise(count_f=n())
 evidencepara$evidence_parasitism[2]="yes" #yes is 245, no is 183
 
 
